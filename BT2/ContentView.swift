@@ -1,66 +1,59 @@
-//
-//  ContentView.swift
-//  BT2
-//
-//  Created by Phan Hoang Phuc on 11/3/25.
-//
-
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var name: String = ""
+    @State private var age: String = ""
+    @State private var result: String = ""
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
+        VStack(spacing: 16) {
+            Text("Kiểm tra độ tuổi")
+                .font(.largeTitle)
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+            TextField("Họ và tên", text: $name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            
+            TextField("Tuổi", text: $age)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+        
+                .padding()
+
+
+            Button(action: {
+                if let ageInt = Int(age) {
+                    if ageInt > 65 {
+                        result = "\(name) là Người già (>65)"
+                    } else if ageInt >= 6 {
+                        result = "\(name) là Người lớn (6-65)"
+                    } else if ageInt >= 2 {
+                        result = "\(name) là Trẻ em (2-6)"
+                    } else {
+                        result = "\(name) là Em bé (<2)"
+                    }
+                } else {
+                    result = "Vui lòng nhập số hợp lệ!"
+                }
+            }) {
+                Text("Kiểm tra")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
             }
+
+            Text(result)
+                .font(.title)
+                .padding()
         }
+        .padding()
     }
 }
 
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
+
